@@ -1,0 +1,39 @@
+<dpl>
+	<name>Notes</name>
+	<path>airdispat.ch/notes</path>
+	<detect>
+		<field name="airdispat.ch/notes/title" reference="title" required="true"/>
+		<field name="airdispat.ch/notes/body" reference="body" required="true"/>
+		<field name="airdispat.ch/notes/category" reference="category"/>
+	</detect>
+	<!--
+		Message Types:
+		Private (from user)
+		Private (to user)
+		Public (from user)
+		Public (subscribed by user)
+	!-->
+	<action name="list" default="true">
+		<h1>Notes</h1>
+		<p><a href="{{ create_url }}">Create a Note</a></p>
+		<table>
+			<tr>
+				<th>Name</th>
+				<th>Action</th>
+			</tr>
+		{{#messages }}
+			<tr>
+				<td>{{title}}</td>
+				<td><a href="{{ view_url }}">View</a></td>
+			</tr>
+		{{\messages }}
+		</table>
+	</action>
+	<action name="create">
+		<h1>New Note</h1>
+		{{ fields.to public }}
+	</action>
+	<action name="view">
+		<h1>{{ message.title }}</h1>
+	</action>
+</dpl>
