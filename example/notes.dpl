@@ -1,0 +1,84 @@
+<dpl>
+	<name>Notes</name>
+	<path>airdispat.ch/notes</path>
+	<tags>
+		<tag name="note" type="public">
+			<field>airdispat.ch/notes/title</field>
+			<field>airdispat.ch/notes/body</field>
+			<field optional="true">airdispat.ch/notes/category</field>
+		</tag>
+	</tags>
+	<!--
+		Message Types:
+		Private (from user)
+		Private (to user)
+		Public (from user)
+		Public (subscribed by user)
+
+		Some types of actions may require different messages.
+	!-->
+	<action name="list" default="true">
+		<h2>Notes</h2>
+		<p>
+			<a href="{{#Action}}create{{/Action}}" class="btn btn-xs btn-danger"><i class="fa fa-edit"></i> Create a Note</a>
+			<a href="{{#Action}}explore{{/Action}}" class="btn btn-xs btn-primary"><i class="fa fa-globe"></i> Explore</a>
+			<a href="{{#Action}}mine{{/Action}}" class="btn btn-xs btn-primary"><i class="fa fa-user"></i> My Notes</a>
+		</p>
+		<style>
+			.note h4, .note h5 {
+				margin: 0;
+				margin-bottom: 5px;
+			}
+			.note .panel-footer {
+				font-size: 12px;
+			}
+			.note .date {
+				color: #999;
+			}
+			.note blockquote {
+				padding-top: 0;
+				padding-bottom: 0;
+				padding-left: 10px;
+			}
+		</style>
+		<div class="row">
+		{{# Tags.note }}
+			<div class="col-md-6">
+				<div class="panel panel-default note">
+					<div class="panel-body" style="padding: 10px;">
+						<div class="row">
+							<div class="col-xs-3">
+								<img src="https://fbcdn-sphotos-f-a.akamaihd.net/hphotos-ak-ash4/302066_10151616869615972_963571219_n.jpg" class="img-responsive img-circle"/>
+							</div>
+							<div class="col-xs-9">
+								<h5><a href="{{ .Actions.profile.URL }}">Hunter Leath</a></h5>
+								<h4 class="title"><a href="{{ Actions.view.URL }}">{{# Get }}airdispat.ch/notes/title{{/ Get }}</a></h4>
+								<blockquote class="blockquote">{{# Get }}airdispat.ch/notes/body{{/ Get }}</blockquote>
+							</div>
+						</div>
+					</div>
+					<div class="panel-footer">
+						<p class="pull-right date">{{# Created }}January 2, 2006 at 3:04PM{{/ Created }}</p>
+						<a href="{{ Actions.view.URL }}">Read More</a> · <a href="{{ Actions.edit.URL }}" class="text-danger">Edit</a>
+					</div>
+				</div>
+			</div>
+		{{/ Tags.note }}
+		{{^ Tags.note }}
+			<div class="col-md-12">
+				Unable to find any notes. Maybe try adding some friends?
+			</div>
+		{{/ Tags.note }}
+		</div>
+	</action>
+	<action name="create">
+		<h2>New Note</h2>
+		{{ fields.to public }}
+	</action>
+	<action name="view">
+		<h2>{{ message.title }}</h2>
+		{{ message.body }}
+		<hr/>
+		<p style="font-size: 10px;">powered by ADNotes</p>
+	</action>
+</dpl>

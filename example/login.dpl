@@ -1,0 +1,12 @@
+<dpl>
+	<name>Login</name>
+	<path>airdispat.ch/login</path>
+	<detect>
+		<field name="airdispat.ch/login/site_name" reference="site_name" required="true"/>
+		<field name="airdispat.ch/login/data" reference="data" required="true"/>
+		<field name="airdispat.ch/login/endpoint" reference="endpoint" required="true"/>
+		<field name="airdispat.ch/login/username" reference="username">
+	</detect>
+	<action name="on_receive">
+	</action>
+</dpl>
