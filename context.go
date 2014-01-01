@@ -29,13 +29,13 @@ func (p *PluginInstance) ActionLambda() func(string) string {
 // Host - a string containing information about the host
 type PluginContext struct {
 	Tags   TagLinker
-	Action ActionLinker
+	Action func(string) string
 	Host   string
 }
 
 // TagLinker manages message lists - this is a map indexed by the name of the tag
 // The tag variables allow the plugin to join with other tags _or_ sort the tags
-type TagLinker func(string) []Message
+type TagLinker map[string]TagContext
 type TagContext []*MessageContext
 
 func (p *PluginInstance) createTagsLinker() TagLinker {
