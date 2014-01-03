@@ -20,9 +20,9 @@
 	<action name="list" default="true">
 		<h2>Notes</h2>
 		<p>
-			<a href="{{#Action}}create{{/Action}}" class="btn btn-xs btn-danger"><i class="fa fa-edit"></i> Create a Note</a>
-			<a href="{{#Action}}explore{{/Action}}" class="btn btn-xs btn-primary"><i class="fa fa-globe"></i> Explore</a>
-			<a href="{{#Action}}mine{{/Action}}" class="btn btn-xs btn-primary"><i class="fa fa-user"></i> My Notes</a>
+			<a href='{{ action "create" }}' class="btn btn-xs btn-danger"><i class="fa fa-edit"></i> Create a Note</a>
+			<a href='{{ action "explore" }}' class="btn btn-xs btn-primary"><i class="fa fa-globe"></i> Explore</a>
+			<a href='{{ action "mine" }}' class="btn btn-xs btn-primary"><i class="fa fa-user"></i> My Notes</a>
 		</p>
 		<style>
 			.note h4, .note h5 {
@@ -42,38 +42,36 @@
 			}
 		</style>
 		<div class="row">
-		{{# Tags.note }}
+		{{ range tag "note" nil 0 }}
 			<div class="col-md-6">
 				<div class="panel panel-default note">
 					<div class="panel-body" style="padding: 10px;">
 						<div class="row">
 							<div class="col-xs-3">
-								<img src="https://fbcdn-sphotos-f-a.akamaihd.net/hphotos-ak-ash4/302066_10151616869615972_963571219_n.jpg" class="img-responsive img-circle"/>
+								<img src="{{ .Sender.Avatar }}" class="img-responsive img-circle"/>
 							</div>
 							<div class="col-xs-9">
-								<h5><a href="{{ .Actions.profile.URL }}">Hunter Leath</a></h5>
-								<h4 class="title"><a href="{{ Actions.view.URL }}">{{# Get }}airdispat.ch/notes/title{{/ Get }}</a></h4>
-								<blockquote class="blockquote">{{# Get }}airdispat.ch/notes/body{{/ Get }}</blockquote>
+								<h5><a href='{{ actionc "profile" .Sender }}'>{{ .Sender.Name }}</a></h5>
+								<h4 class="title"><a href='{{ actionc "view" . }}'>{{ .Get "airdispat.ch/notes/title" }}</a></h4>
+								<blockquote class="blockquote">{{ .Get "airdispat.ch/notes/body" }}</blockquote>
 							</div>
 						</div>
 					</div>
 					<div class="panel-footer">
-						<p class="pull-right date">{{# Created }}January 2, 2006 at 3:04PM{{/ Created }}</p>
-						<a href="{{ Actions.view.URL }}">Read More</a> · <a href="{{ Actions.edit.URL }}" class="text-danger">Edit</a>
+						<p class="pull-right date">{{ .Created "January 2, 2006 at 3:04PM" }}</p>
+						<a href='{{ actionc "view" . }}'>Read More</a> · <a href='{{ actionc "edit" . }}' class="text-danger">Edit</a>
 					</div>
 				</div>
 			</div>
-		{{/ Tags.note }}
-		{{^ Tags.note }}
+		{{ else }}
 			<div class="col-md-12">
 				Unable to find any notes. Maybe try adding some friends?
 			</div>
-		{{/ Tags.note }}
+		{{ end }}
 		</div>
 	</action>
 	<action name="create">
 		<h2>New Note</h2>
-		{{ fields.to public }}
 	</action>
 	<action name="view">
 		<h2>{{ message.title }}</h2>

@@ -1,10 +1,10 @@
 package dpl
 
 import (
+	"bytes"
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"github.com/huntaub/mustache"
 	"html/template"
 )
 
@@ -17,7 +17,8 @@ type PluginInstance struct {
 type Plugin struct {
 	Name          string            `xml:"name"`
 	Path          string            `xml:"path"`
-	Tags          []Tag             `xml:"tags>tag"`
+	Tag           []Tag             `xml:"tags>tag"`
+	Tags          map[string]Tag    `xml:"-"`
 	Action        []Action          `xml:"action"`
 	Actions       map[string]Action `xml:"-"`
 	DefaultAction string            `xml:"-"`
@@ -28,8 +29,7 @@ func (p *Plugin) CreateInstance(h Host, c interface{}) *PluginInstance {
 	return &PluginInstance{p, c, h}
 }
 
-// Method on PluginInstance called to render an action to a template
-func (p *PluginInstance) RunAction(action string) (template.HTML, error) {
+func (p *PluginInstance) RunActionWithContext(action string, message Message, user *User) (template.HTML, error) {
 	var action_name string = action
 	if action == "" {
 		action_name = p.Plugin.DefaultAction
@@ -37,13 +37,26 @@ func (p *PluginInstance) RunAction(action string) (template.HTML, error) {
 
 	the_action := p.Plugin.Actions[action_name]
 
-	context, err := p.assembleContext(the_action)
+	t, err := template.New("plugin").Funcs(p.createFuncMap()).Parse(the_action.HTML)
 	if err != nil {
 		return "", err
 	}
 
-	data := mustache.Render(the_action.HTML, context)
-	return template.HTML(data), nil
+	var buf bytes.Buffer
+	err = t.ExecuteTemplate(&buf, "plugin",
+		PluginContext{
+			Host:    "DPL",
+			Version: 0,
+			Message: message,
+			User:    user,
+		},
+	)
+	return template.HTML(buf.String()), err
+}
+
+// Method on PluginInstance called to render an action to a template
+func (p *PluginInstance) RunAction(action string) (template.HTML, error) {
+	return p.RunActionWithContext(action, nil, nil)
 }
 
 // Method on PluginInstance called when the MailServer receives a new message.
@@ -119,10 +132,20 @@ func verifyPlugin(p *Plugin) error {
 	if p.Name == "" {
 		p.Name = p.Path
 	}
-	if p.Tags == nil {
+
+	if p.Tag == nil {
 		return errors.New("Plugin lacks tags.")
 	}
+	for _, v := range p.Tag {
+		if p.Tags == nil {
+			p.Tags = make(map[string]Tag)
+		}
+		p.Tags[v.Name] = v
+	}
 
+	if p.Action == nil {
+		return errors.New("Plugin lacks actions.")
+	}
 	for _, v := range p.Action {
 		if p.Actions == nil {
 			p.Actions = make(map[string]Action)

@@ -22,13 +22,30 @@ type Notification struct {
 	Image url.URL
 }
 
+// Host Interface describes what methods a Plugin Needs to Communicate with the Mailserver
 type Host interface {
-	GetMessagesForTag(plugin *PluginInstance, tag Tag) ([]Message, error)
-	GetMessagesForTagWithPredicate(plugin *PluginInstance, tag Tag, p Predicate) ([]Message, error)
-	GetMessagesForTagWithUser(plugin *PluginInstance, tag Tag, user *common.ADAddress) ([]Message, error)
-	GetURLForAction(plugin *PluginInstance, action Action) (string, error)
+	// Data Fetching Methods
+	GetMessages(plugin *PluginInstance, tag Tag, predicate *Predicate, limit int) ([]Message, error)      // Get a list of Messages that are Tagged with a specified tag, and follow a predicate
+	GetURLForAction(plugin *PluginInstance, action Action, message Message, user *User) (*url.URL, error) // Gets the URL for an Action
+
+	// Action Methods
 	RunNotification(plugin *PluginInstance, n *Notification)
+
+	// Meta Methods
 	Identify() string
 }
 
-type Predicate string
+type Predicate struct {
+	Sort   Sorter
+	Search Searcher
+}
+
+type Sorter struct {
+	FieldName string
+	Ascending bool
+}
+
+type Searcher struct {
+	Value string
+	Data  interface{}
+}

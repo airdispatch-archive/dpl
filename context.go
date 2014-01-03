@@ -1,63 +1,93 @@
 package dpl
 
 import (
-	"fmt"
+	"html/template"
 	"net/url"
 	"time"
 )
 
-func (p *PluginInstance) assembleContext(action Action) (PluginContext, error) {
-	context := PluginContext{
-		Tags:   p.createTagsLinker(),
-		Action: p.ActionLambda(),
-		Host:   fmt.Sprintf("DPL v0.1 (Host: %s)", p.Host.Identify()),
-	}
-	return context, nil
+type PluginContext struct {
+	Host    string
+	Version int
+	User    *User
+	Message Message
 }
 
-func (p *PluginInstance) ActionLambda() func(string) string {
-	return func(a string) string {
+func (p *PluginInstance) createFuncMap() template.FuncMap {
+	return template.FuncMap{
+		"action":  p.ActionLambda(),
+		"actionc": p.ActionLambdaContext(),
+		"tag":     p.TagLambda(),
+	}
+}
+
+// ActionLinker manages lists of actions - this is a map indexed by the name of the action
+type ActionLinker func(string) *url.URL
+type ActionLinkerContext func(string, interface{}) *url.URL
+
+func (p *PluginInstance) ActionLambdaContext() ActionLinkerContext {
+	return func(a string, b interface{}) *url.URL {
 		v := p.Actions[a]
-		url, _ := p.Host.GetURLForAction(p, v)
+		var url *url.URL
+
+		switch t := b.(type) {
+		default:
+			url, _ = p.Host.GetURLForAction(p, v, nil, nil)
+		case Message:
+			url, _ = p.Host.GetURLForAction(p, v, t, nil)
+		case *User:
+			url, _ = p.Host.GetURLForAction(p, v, nil, t)
+		}
+
 		return url
 	}
 }
 
-// Plugins have access to three top-level variables
-// Tags - lists of messages that have been marked for the plugin
-// Actions - list of actions that have been defined by the plugin, access to URLs and such
-// Host - a string containing information about the host
-type PluginContext struct {
-	Tags   TagLinker
-	Action func(string) string
-	Host   string
+func (p *PluginInstance) ActionLambda() ActionLinker {
+	return func(a string) *url.URL {
+		return p.ActionLambdaContext()(a, nil)
+	}
 }
 
 // TagLinker manages message lists - this is a map indexed by the name of the tag
 // The tag variables allow the plugin to join with other tags _or_ sort the tags
-type TagLinker map[string]TagContext
-type TagContext []*MessageContext
+type TagLinker func(string, *Predicate, int) []*MessageContext
 
-func (p *PluginInstance) createTagsLinker() TagLinker {
-	linker := make(TagLinker)
-	for _, v := range p.Plugin.Tags {
-		messageList, err := p.Host.GetMessagesForTag(p, v)
+func (p *PluginInstance) TagLambda() TagLinker {
+	return func(tagName string, search *Predicate, limit int) []*MessageContext {
+		tag, ok := p.Tags[tagName]
+		if !ok {
+			panic("Couldn't find tag named " + tagName)
+		}
+
+		messages, err := p.Host.GetMessages(p, tag, search, limit)
 		if err != nil {
-			continue
+			// Not quite sure what to do with this error
+			// Maybe we shouldn't pass an error and just Send an emtpy list instead
+			panic(err)
 		}
 
-		mContext := make([]*MessageContext, 0)
-		for _, v := range messageList {
-			mContext = append(mContext, &MessageContext{v})
+		var contexts []*MessageContext
+		for _, v := range messages {
+			contexts = append(contexts, &MessageContext{
+				v,
+				v.Sender(),
+			})
 		}
-		linker[v.Name] = mContext
+
+		return contexts
 	}
-	return linker
 }
 
 type User struct {
-	Name   string
-	Avatar url.URL
+	Name    string
+	Avatar  *url.URL
+	Profile *url.URL
+}
+
+// Aciton on User retrieves the URL for an Action that has a User attached
+func (m *User) Action(f string) url.URL {
+	return url.URL{}
 }
 
 type Message interface {
@@ -68,40 +98,26 @@ type Message interface {
 }
 
 type MessageContext struct {
-	inner Message
+	inner  Message
+	Sender User
+}
+
+// Action on MessageContext retrieves the URL for an Action that has a Message Attached
+func (m *MessageContext) Action(f string) url.URL {
+	return url.URL{}
 }
 
 // The Get Function allows DPL templates to access different fields off of the current MessageContext
-func (m *MessageContext) Get() func(string) string {
-	return func(field string) string {
-		val, err := m.inner.Get(field)
-		if err != nil {
-			return "Plugin Error (" + err.Error() + ") when accessing field " + field
-		}
-		return string(val)
+func (m *MessageContext) Get(field string) string {
+	val, err := m.inner.Get(field)
+	if err != nil {
+		return "Plugin Error (" + err.Error() + ") when accessing field " + field
 	}
+	return string(val)
 }
 
 // The Date Function allows DPL templates to access the sent date of the current MessageContext
-func (m *MessageContext) Created() func(string) string {
-	return func(format string) string {
-		val := m.inner.Created()
-		return val.Format(format)
-	}
-}
-
-// ActionLinker manages lists of actions - this is a map indexed by the name of the action
-type ActionLinker map[string]ActionContext
-type ActionContext struct {
-	URL string
-}
-
-// Action Linkers _can_ be cached, actions only change on PluginUpdate
-func (p *PluginInstance) createActionLinker() ActionLinker {
-	actions := make(ActionLinker)
-	for _, v := range p.Plugin.Action {
-		url, _ := p.Host.GetURLForAction(p, v)
-		actions[v.Name] = ActionContext{url}
-	}
-	return actions
+func (m *MessageContext) Created(format string) string {
+	val := m.inner.Created()
+	return val.Format(format)
 }
