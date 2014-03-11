@@ -42,12 +42,17 @@ func (p *PluginInstance) RunActionWithContext(action string, message Message, us
 		return "", err
 	}
 
+	var mc *MessageContext
+	if message != nil {
+		mc = &MessageContext{message, message.Sender()}
+	}
+
 	var buf bytes.Buffer
 	err = t.ExecuteTemplate(&buf, "plugin",
 		PluginContext{
 			Host:    "DPL",
 			Version: 0,
-			Message: message,
+			Message: mc,
 			User:    user,
 		},
 	)

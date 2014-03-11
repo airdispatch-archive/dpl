@@ -10,7 +10,7 @@ type PluginContext struct {
 	Host    string
 	Version int
 	User    *User
-	Message Message
+	Message *MessageContext
 }
 
 func (p *PluginInstance) createFuncMap() template.FuncMap {
@@ -27,16 +27,20 @@ type ActionLinkerContext func(string, interface{}) *url.URL
 
 func (p *PluginInstance) ActionLambdaContext() ActionLinkerContext {
 	return func(a string, b interface{}) *url.URL {
-		v := p.Actions[a]
+		v, ok := p.Actions[a]
+		if !ok {
+			return nil
+		}
+
 		var url *url.URL
 
 		switch t := b.(type) {
+		case *MessageContext:
+			url, _ = p.Host.GetURLForAction(p, v, t.inner, nil)
+		case User:
+			url, _ = p.Host.GetURLForAction(p, v, nil, &t)
 		default:
 			url, _ = p.Host.GetURLForAction(p, v, nil, nil)
-		case Message:
-			url, _ = p.Host.GetURLForAction(p, v, t, nil)
-		case *User:
-			url, _ = p.Host.GetURLForAction(p, v, nil, t)
 		}
 
 		return url
@@ -80,8 +84,14 @@ func (p *PluginInstance) TagLambda() TagLinker {
 }
 
 type User struct {
-	Name    string
-	Avatar  *url.URL
+	// Full Name of the Usre
+	Name string
+	// Address Information about the User
+	DisplayAddress string
+	Address        string
+	// Profile Image Location
+	Avatar *url.URL
+	// Profile Location
 	Profile *url.URL
 }
 
