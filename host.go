@@ -1,7 +1,7 @@
 package dpl
 
 import (
-	"airdispat.ch/common"
+	"airdispat.ch/identity"
 	"html/template"
 	"net/url"
 )
@@ -13,7 +13,7 @@ const MessagesPublic MessageType = 0
 const MessagesPrivate MessageType = 1
 
 // Special Addresses
-var AllAddresses *common.ADAddress = nil
+var AllAddresses *identity.Address = nil
 
 // Notifications are specially named actions
 type Notification struct {
