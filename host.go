@@ -25,8 +25,8 @@ type Notification struct {
 // Host Interface describes what methods a Plugin Needs to Communicate with the Mailserver
 type Host interface {
 	// Data Fetching Methods
-	GetMessages(plugin *PluginInstance, tag Tag, predicate *Predicate, limit int) ([]Message, error)      // Get a list of Messages that are Tagged with a specified tag, and follow a predicate
-	GetURLForAction(plugin *PluginInstance, action Action, message Message, user *User) (*url.URL, error) // Gets the URL for an Action
+	GetMessages(plugin *PluginInstance, tag Tag, predicate *Predicate, limit int) ([]Message, error)     // Get a list of Messages that are Tagged with a specified tag, and follow a predicate
+	GetURLForAction(plugin *PluginInstance, action Action, message Message, user User) (*url.URL, error) // Gets the URL for an Action
 
 	// Action Methods
 	RunNotification(plugin *PluginInstance, n *Notification)

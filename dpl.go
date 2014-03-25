@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
+	"io"
 )
 
 type PluginInstance struct {
@@ -118,6 +119,18 @@ type Action struct {
 	HTML    string `xml:",innerxml"`
 	Name    string `xml:"name,attr"`
 	Default bool   `xml:"default,attr"`
+}
+
+func ParseDPLStream(r io.Reader) (*Plugin, error) {
+	coder := xml.NewDecoder(r)
+
+	var d Plugin
+	err := coder.Decode(&d)
+	if err != nil {
+		return nil, err
+	}
+
+	return &d, verifyPlugin(&d)
 }
 
 func ParseDPL(r []byte) (*Plugin, error) {

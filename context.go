@@ -38,7 +38,7 @@ func (p *PluginInstance) ActionLambdaContext() ActionLinkerContext {
 		case *MessageContext:
 			url, _ = p.Host.GetURLForAction(p, v, t.inner, nil)
 		case User:
-			url, _ = p.Host.GetURLForAction(p, v, nil, &t)
+			url, _ = p.Host.GetURLForAction(p, v, nil, t)
 		default:
 			url, _ = p.Host.GetURLForAction(p, v, nil, nil)
 		}
@@ -83,21 +83,19 @@ func (p *PluginInstance) TagLambda() TagLinker {
 	}
 }
 
-type User struct {
+type User interface {
 	// Full Name of the Usre
-	Name string
-	// Address Information about the User
-	DisplayAddress string
-	Address        string
-	// Profile Image Location
-	Avatar *url.URL
-	// Profile Location
-	Profile *url.URL
-}
+	Name() string
 
-// Aciton on User retrieves the URL for an Action that has a User attached
-func (m *User) Action(f string) url.URL {
-	return url.URL{}
+	// Address Information about the User
+	DisplayAddress() string
+	Address() string
+
+	// Profile Image Location
+	Avatar() *url.URL
+
+	// Profile Location
+	Profile() *url.URL
 }
 
 type Message interface {
