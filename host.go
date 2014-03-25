@@ -27,6 +27,7 @@ type Host interface {
 	// Data Fetching Methods
 	GetMessages(plugin *PluginInstance, tag Tag, predicate *Predicate, limit int) ([]Message, error)     // Get a list of Messages that are Tagged with a specified tag, and follow a predicate
 	GetURLForAction(plugin *PluginInstance, action Action, message Message, user User) (*url.URL, error) // Gets the URL for an Action
+	SendURL() *url.URL
 
 	// Action Methods
 	RunNotification(plugin *PluginInstance, n *Notification)

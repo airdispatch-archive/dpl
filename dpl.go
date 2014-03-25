@@ -30,7 +30,7 @@ func (p *Plugin) CreateInstance(h Host, c interface{}) *PluginInstance {
 	return &PluginInstance{p, c, h}
 }
 
-func (p *PluginInstance) RunActionWithContext(action string, message Message, user *User) (template.HTML, error) {
+func (p *PluginInstance) RunActionWithContext(action string, message Message, user User) (template.HTML, error) {
 	var action_name string = action
 	if action == "" {
 		action_name = p.Plugin.DefaultAction

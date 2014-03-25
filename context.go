@@ -9,7 +9,7 @@ import (
 type PluginContext struct {
 	Host    string
 	Version int
-	User    *User
+	User    User
 	Message *MessageContext
 }
 
@@ -27,6 +27,9 @@ type ActionLinkerContext func(string, interface{}) *url.URL
 
 func (p *PluginInstance) ActionLambdaContext() ActionLinkerContext {
 	return func(a string, b interface{}) *url.URL {
+		if a == "send" {
+			return p.Host.SendURL()
+		}
 		v, ok := p.Actions[a]
 		if !ok {
 			return nil
