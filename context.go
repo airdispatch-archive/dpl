@@ -28,7 +28,7 @@ type ActionLinkerContext func(string, interface{}) *url.URL
 func (p *PluginInstance) ActionLambdaContext() ActionLinkerContext {
 	return func(a string, b interface{}) *url.URL {
 		if a == "send" {
-			return p.Host.SendURL()
+			return p.Host.SendURL(p)
 		}
 		v, ok := p.Actions[a]
 		if !ok {
@@ -107,6 +107,12 @@ type Message interface {
 	Created() time.Time
 	Sender() User
 }
+
+type MessageList []Message
+
+func (m MessageList) Len() int           { return len(m) }
+func (m MessageList) Less(i, j int) bool { return m[i].Created().Before(m[j].Created()) }
+func (m MessageList) Swap(i, j int)      { m[i], m[j] = m[j], m[i] }
 
 type MessageContext struct {
 	inner  Message
