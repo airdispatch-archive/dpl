@@ -106,6 +106,13 @@ type Message interface {
 	Has(field string) bool
 	Created() time.Time
 	Sender() User
+	Components() []Component
+}
+
+type Component interface {
+	Key() string
+	Value() []byte
+	String() string
 }
 
 type MessageList []Message
