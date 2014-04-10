@@ -106,7 +106,9 @@ type Message interface {
 	Has(field string) bool
 	Created() time.Time
 	Sender() User
+	From() []User
 	Components() []Component
+	// IsEditable(User) bool
 }
 
 type Component interface {
@@ -118,7 +120,7 @@ type Component interface {
 type MessageList []Message
 
 func (m MessageList) Len() int           { return len(m) }
-func (m MessageList) Less(i, j int) bool { return m[i].Created().Before(m[j].Created()) }
+func (m MessageList) Less(i, j int) bool { return m[i].Created().After(m[j].Created()) }
 func (m MessageList) Swap(i, j int)      { m[i], m[j] = m[j], m[i] }
 
 type MessageContext struct {
