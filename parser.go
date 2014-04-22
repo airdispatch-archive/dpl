@@ -7,10 +7,11 @@ import (
 )
 
 type Tag struct {
-	Name      string  `xml:"name,attr"`
-	Type      string  `xml:"type,attr"`
-	OnReceive string  `xml:"onreceive,attr"`
-	Fields    []Field `xml:"field"`
+	Name       string  `xml:"name,attr"`
+	Type       string  `xml:"type,attr"`
+	OnReceive  string  `xml:"onreceive,attr"`
+	FeedAction string  `xml:"feed,attr"`
+	Fields     []Field `xml:"field"`
 }
 
 type Field struct {
